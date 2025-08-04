@@ -6,11 +6,11 @@ A comprehensive serverless monitoring solution that processes sensor data from i
 
 ### 🎯 Business Impact
 
-💰 Cost Reduction: Reduces unplanned downtime by 65% through predictive maintenance
-⚡ Performance: Processes 1,000+ sensor readings per hour with sub-second latency
-🔮 Predictive Power: Forecasts battery failures 24-48 hours in advance with 87% accuracy
-📊 Real-time Insights: Live monitoring dashboard with automated alerting
-💡 ROI: Prevents $50K+ in emergency repairs per incident
+* 💰 Cost Reduction: Reduces unplanned downtime by 65% through predictive maintenance
+* ⚡ Performance: Processes 1,000+ sensor readings per hour with sub-second latency
+* 🔮 Predictive Power: Forecasts battery failures 24-48 hours in advance with 87% accuracy
+* 📊 Real-time Insights: Live monitoring dashboard with automated alerting
+* 💡 ROI: Prevents $50K+ in emergency repairs per incident
  
 ### 🏗️ Architecture Overview
 <img width="1900" height="1184" alt="image" src="https://github.com/user-attachments/assets/fae9caad-fccf-444d-b4c7-583d988189d5" />
