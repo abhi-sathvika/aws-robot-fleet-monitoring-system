@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Robot Data Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e8ecef;
+        }
+
+        .panel h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #34495e;
+            font-weight: 500;
+        }
+
+        .control-group input, .control-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e8ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .control-group input:focus, .control-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button.stop {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+
+        .button.stop:hover {
+            box-shadow: 0 10px 20px rgba(231, 76, 60, 0.3);
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .status.running {
+            background: #d5f4e6;
+            color: #27ae60;
+            border: 1px solid #27ae60;
+        }
+
+        .status.stopped {
+            background: #fadbd8;
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+        }
+
+        .current-data {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .data-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .data-item .label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .data-item .value {
+            color: #2c3e50;
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+
+        .log {
+            background: #2c3e50;
+            color: #ecf0f1;
+            border-radius: 10px;
+            padding: 20px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 5px 0;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .timestamp {
+            color: #95a5a6;
+            margin-right: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 IoT Robot Data Simulator</h1>
+            <p>Generate realistic sensor data for AWS IoT Core pipeline demonstration</p>
+        </div>
+
+        <div class="grid">
+            <div class="panel">
+                <h3>🎛️ Simulation Controls</h3>
+                
+                <div class="control-group">
+                    <label>Robot ID:</label>
+                    <input type="text" id="robotId" value="demo-robot-001" placeholder="Enter robot identifier">
+                </div>
+
+                <div class="control-group">
+                    <label>Simulation Scenario:</label>
+                    <select id="scenario">
+                        <option value="normal">Normal Operation</option>
+                        <option value="obstacle_course">Obstacle Course</option>
+                        <option value="temperature_monitoring">Temperature Monitoring</option>
+                        <option value="security_patrol">Security Patrol</option>
+                        <option value="warehouse_inspection">Warehouse Inspection</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Message Frequency (seconds):</label>
+                    <input type="number" id="frequency" value="3" min="1" max="60">
+                </div>
+
+                <div class="control-group">
+                    <label>Total Messages to Send:</label>
+                    <input type="number" id="totalMessages" value="100" min="1" max="1000">
+                </div>
+
+                <button class="button" id="startBtn" onclick="startSimulation()">🚀 Start Simulation</button>
+                <button class="button stop" id="stopBtn" onclick="stopSimulation()" disabled>⏹️ Stop Simulation</button>
+
+                <div id="status" class="status stopped">
+                    Status: Ready to start simulation
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>📊 Current Sensor Data</h3>
+                <div class="current-data">
+                    <div class="data-grid">
+                        <div class="data-item">
+                            <div class="label">Temperature</div>
+                            <div class="value" id="currentTemp">--°C</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="label">Humidity</div>
+                            <div class="value" id="currentHumidity">--%</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="label">Distance</div>
+                            <div class="value" id="currentDistance">-- cm</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="label">Light Level</div>
+                            <div class="value" id="currentLight">-- lux</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="label">Motion</div>
+                            <div class="value" id="currentMotion">--</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="label">Battery</div>
+                            <div class="value" id="currentBattery">--%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3>📝 Simulation Log</h3>
+            <div class="log" id="log">
+                <div class="log-entry">
+                    <span class="timestamp">[READY]</span> 
+                    Simulator ready. Configure settings and click "Start Simulation" to begin sending data to AWS IoT Core.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let simulationInterval;
+        let messageCount = 0;
+        let isRunning = false;
+        let scenarios = {
+            normal: {
+                name: "Normal Operation",
+                tempRange: [20, 25],
+                humidityRange: [40, 70],
+                distanceRange: [30, 200],
+                lightRange: [200, 800],
+                motionProb: 0.3
+            },
+            obstacle_course: {
+                name: "Obstacle Course",
+                tempRange: [22, 28],
+                humidityRange: [45, 65],
+                distanceRange: [5, 50], // More obstacles
+                lightRange: [300, 600],
+                motionProb: 0.8
+            },
+            temperature_monitoring: {
+                name: "Temperature Monitoring",
+                tempRange: [15, 35], // Wider range
+                humidityRange: [30, 80],
+                distanceRange: [50, 150],
+                lightRange: [100, 400],
+                motionProb: 0.2
+            },
+            security_patrol: {
+                name: "Security Patrol",
+                tempRange: [18, 24],
+                humidityRange: [35, 65],
+                distanceRange: [20, 300],
+                lightRange: [50, 200], // Darker environment
+                motionProb: 0.6
+            },
+            warehouse_inspection: {
+                name: "Warehouse Inspection",
+                tempRange: [16, 22],
+                humidityRange: [45, 75],
+                distanceRange: [10, 100],
+                lightRange: [400, 1000], // Well lit
+                motionProb: 0.4
+            }
+        };
+
+        function getRandomInRange(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        function generateSensorData() {
+            const scenario = scenarios[document.getElementById('scenario').value];
+            const robotId = document.getElementById('robotId').value;
+            
+            const temperature = Math.round(getRandomInRange(scenario.tempRange[0], scenario.tempRange[1]) * 10) / 10;
+            const humidity = Math.round(getRandomInRange(scenario.humidityRange[0], scenario.humidityRange[1]));
+            const distance = Math.round(getRandomInRange(scenario.distanceRange[0], scenario.distanceRange[1]));
+            const light = Math.round(getRandomInRange(scenario.lightRange[0], scenario.lightRange[1]));
+            const motion = Math.random() < scenario.motionProb;
+            const battery = Math.max(10, 100 - (messageCount * 0.1)); // Slowly decreasing battery
+
+            return {
+                robot_id: robotId,
+                timestamp: new Date().toISOString(),
+                temperature: temperature,
+                humidity: humidity,
+                distance: distance,
+                light: light,
+                motion: motion,
+                battery: Math.round(battery),
+                scenario: scenario.name,
+                message_count: messageCount
+            };
+        }
+
+        function updateCurrentData(data) {
+            document.getElementById('currentTemp').textContent = `${data.temperature}°C`;
+            document.getElementById('currentHumidity').textContent = `${data.humidity}%`;
+            document.getElementById('currentDistance').textContent = `${data.distance} cm`;
+            document.getElementById('currentLight').textContent = `${data.light} lux`;
+            document.getElementById('currentMotion').textContent = data.motion ? 'Detected' : 'None';
+            document.getElementById('currentBattery').textContent = `${data.battery}%`;
+        }
+
+        function logMessage(message, type = 'info') {
+            const log = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function startSimulation() {
+            if (isRunning) return;
+            
+            const frequency = parseInt(document.getElementById('frequency').value) * 1000;
+            const totalMessages = parseInt(document.getElementById('totalMessages').value);
+            const robotId = document.getElementById('robotId').value;
+            
+            if (!robotId.trim()) {
+                alert('Please enter a Robot ID');
+                return;
+            }
+
+            isRunning = true;
+            messageCount = 0;
+            
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('status').className = 'status running';
+            document.getElementById('status').textContent = `Status: Simulation running - ${messageCount}/${totalMessages} messages sent`;
+
+            logMessage(`🚀 Starting simulation for robot "${robotId}" - Scenario: ${scenarios[document.getElementById('scenario').value].name}`);
+            logMessage(`📡 Will send ${totalMessages} messages every ${frequency/1000} seconds`);
+
+            simulationInterval = setInterval(() => {
+                if (messageCount >= totalMessages) {
+                    stopSimulation();
+                    return;
+                }
+
+                const sensorData = generateSensorData();
+                updateCurrentData(sensorData);
+                
+                messageCount++;
+                
+                // Create the topic based on robot ID
+                const topic = `robot/${robotId}/data`;
+                
+                logMessage(`📤 Message ${messageCount}: Sent to topic "${topic}"`);
+                logMessage(`   📊 Temp: ${sensorData.temperature}°C, Humidity: ${sensorData.humidity}%, Distance: ${sensorData.distance}cm`);
+                
+                if (sensorData.distance < 20) {
+                    logMessage(`   ⚠️ OBSTACLE ALERT: Distance ${sensorData.distance}cm`, 'warning');
+                }
+                
+                if (sensorData.motion) {
+                    logMessage(`   🏃 Motion detected!`, 'info');
+                }
+
+                document.getElementById('status').textContent = `Status: Simulation running - ${messageCount}/${totalMessages} messages sent`;
+
+                // Here's where you would actually send to AWS IoT Core
+                // For demo purposes, we're just logging the data
+                console.log('Would send to AWS IoT Core:', JSON.stringify(sensorData, null, 2));
+                
+            }, frequency);
+        }
+
+        function stopSimulation() {
+            if (!isRunning) return;
+            
+            isRunning = false;
+            clearInterval(simulationInterval);
+            
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('status').className = 'status stopped';
+            document.getElementById('status').textContent = `Status: Simulation stopped - ${messageCount} total messages sent`;
+
+            logMessage(`⏹️ Simulation stopped. Total messages sent: ${messageCount}`);
+            logMessage(`✅ Ready for next simulation run`);
+        }
+
+        // Initialize
+        logMessage('🤖 IoT Robot Simulator initialized');
+        logMessage('💡 TIP: Choose a scenario and start the simulation to generate realistic robot sensor data');
+    </script>
+</body>
+</html>

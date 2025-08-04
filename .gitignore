@@ -1,0 +1,3 @@
+certs\device-certificate.pem.crt
+certs\private-key.pem.key
+certs\root-cs.pem
